@@ -1,33 +1,15 @@
 # Stage 1: Build the application with all dependencies
-# Using a full Python image to install dependencies. This keeps the final image lean.
 FROM python:3.9-slim as builder
-
 WORKDIR /app
-
-# Create a requirements.txt file on the fly for this demo.
-# In a real project, this file would be in the repository.
-RUN echo "flask" > requirements.txt
+COPY src/app/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ---
-
 # Stage 2: Create the final, lightweight production image
-# Using a slim base image for a smaller footprint and better security.
-# It contains only our application and its runtime dependencies, nothing else.
 FROM python:3.9-slim
-
 WORKDIR /app
-
-# Copy the installed packages from the builder stage
 COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
-
-# Copy the application source code
+# This path is now correct because the build context is the root of the repo
 COPY src/app/app.py .
 
-# Expose the port the app runs on
 EXPOSE 8080
-
-# Command to run the application
-# Using gunicorn for a production-ready server instead of Flask's dev server.
-# This requires adding 'gunicorn' to requirements.txt in a real scenario.
 CMD ["python", "app.py"]
