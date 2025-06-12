@@ -1,0 +1,10 @@
+artifact_location: file:///workspaces/bimodal-mlops-demo/notebooks/mlruns/0/models/m-fe380e634d25464a93d2d7fd90cadf21/artifacts
+creation_timestamp: 1749633706968
+experiment_id: '0'
+last_updated_timestamp: 1749633709654
+model_id: m-fe380e634d25464a93d2d7fd90cadf21
+model_type: null
+name: model
+source_run_id: 18a4185da0104d5f97fa36b92d445d8e
+status: 2
+status_message: null

@@ -1,0 +1,15 @@
+# Specifies the Helm chart API version. `v2` is the current standard.
+apiVersion: v2
+
+# The name of the chart. This is what you will refer to when running helm commands.
+name: model-server
+
+# A short description of the chart's purpose.
+description: A Helm chart for deploying our ML model serving application
+
+# The version of this chart. This should be incremented when you make changes to the chart's templates.
+version: 0.1.0
+
+# The version of the application being deployed. This is separate from the chart version
+# and should be updated when the application code (e.g., the Docker image) changes.
+appVersion: "1.0.0"

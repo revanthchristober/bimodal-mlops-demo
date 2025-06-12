@@ -1,0 +1,31 @@
+# This file contains the default configuration values for our Helm chart.
+# By externalizing configuration here, we can deploy the same application chart
+# to different environments (e.g., dev, staging, prod) with different settings
+# just by providing a different values file during installation. This is a core
+# principle of reusable and maintainable deployments.
+
+# replicaCount specifies how many pods of our application should be running.
+# Setting this to 2 or more ensures high availability; if one pod fails,
+# traffic is still served by the other(s).
+replicaCount: 2
+
+# image defines the container image to be deployed.
+image:
+  # The location of the container image registry (e.g., Docker Hub, ECR, GCR).
+  repository: revanthchristober/model-server # Placeholder for your Docker Hub repo
+  # The specific version tag of the image to deploy. Using 'latest' is okay for
+  # demos, but in production, we would use immutable tags like git SHAs or version
+  # numbers (e.g., "1.0.2") to ensure deployments are predictable.
+  tag: latest
+  # The pull policy tells Kubernetes when to pull the image. 'IfNotPresent'
+  # is efficient, as it won't re-pull an image that's already on the node.
+  pullPolicy: IfNotPresent
+
+# service defines how our application is exposed inside the Kubernetes cluster.
+service:
+  # 'ClusterIP' exposes the service on an internal IP in the cluster. This is the
+  # default and is appropriate for services that only need to be reached by other
+  # services within the cluster.
+  type: ClusterIP
+  # The port that other services inside the cluster will use to communicate with this service.
+  port: 80

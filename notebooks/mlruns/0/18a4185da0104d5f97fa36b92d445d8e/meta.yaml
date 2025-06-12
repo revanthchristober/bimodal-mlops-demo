@@ -1,0 +1,14 @@
+artifact_uri: file:///workspaces/bimodal-mlops-demo/notebooks/mlruns/0/18a4185da0104d5f97fa36b92d445d8e/artifacts
+end_time: 1749633709656
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 18a4185da0104d5f97fa36b92d445d8e
+run_name: merciful-lark-499
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1749633706942
+status: 3
+tags: []
+user_id: codespace

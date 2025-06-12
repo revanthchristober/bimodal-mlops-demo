@@ -1,0 +1,57 @@
+# This file defines the core Kubernetes resources needed to run our application.
+# It's a template that gets populated with values from values.yaml.
+
+# The Deployment resource manages the application pods. It ensures that a specified
+# number of replicas are always running. If a pod crashes, the Deployment
+# will automatically create a new one.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # The name is dynamically set from the Chart.yaml file.
+  name: {{ .Chart.Name }}
+spec:
+  # The number of pods to run is pulled from values.yaml, making it configurable.
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      # This selector tells the Deployment which pods to manage.
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        # Pods created by this Deployment will have this label.
+        app: {{ .Chart.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          # The container image is constructed from the repository and tag in values.yaml.
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            # This must match the port the application listens on inside the container (from our app.py).
+            - containerPort: 8080
+          livenessProbe: # This is a critical best practice for resilient services.
+            # Kubernetes will periodically check this endpoint. If it fails, the container is restarted.
+            httpGet:
+              # This path matches the /health endpoint we created in our Flask app.
+              path: /health
+              port: 8080
+---
+# The Service resource provides a stable network endpoint (a single IP address and DNS name)
+# for accessing the pods managed by the Deployment. Pods are ephemeral, but the Service IP is stable.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}
+spec:
+  # The type of service is pulled from values.yaml.
+  type: {{ .Values.service.type }}
+  ports:
+    # This is the port the Service will be available on within the cluster.
+    - port: {{ .Values.service.port }}
+      # This is the port on the container that the service will forward traffic to.
+      targetPort: 8080
+  # This selector tells the Service which pods to send traffic to.
+  # It must match the labels on the pods from our Deployment template.
+  selector:
+    app: {{ .Chart.Name }}
