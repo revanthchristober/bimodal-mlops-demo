@@ -1,32 +1,71 @@
-# Stage 1: Build the application with all dependencies
-# Using a full Python image to install dependencies. This keeps the final image lean.
-FROM python:3.9-slim as builder
+name: MLOps CI/CD Pipeline
 
-WORKDIR /app
+on:
+  push:
+    branches: [ main ]
 
-# Create a requirements.txt file on the fly for this demo.
-# In a real project, this file would be in the repository.
-RUN echo "flask" > requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-# ---
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-# Stage 2: Create the final, lightweight production image
-# Using a slim base image for a smaller footprint and better security.
-# It contains only our application and its runtime dependencies, nothing else.
-FROM python:3.9-slim
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-WORKDIR /app
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          # This context path is correct for our project structure
+          context: ./src/app
+          file: ./src/app/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/model-server:latest, ${{ secrets.DOCKERHUB_USERNAME }}/model-server:${{ github.sha }}
 
-# Copy the installed packages from the builder stage
-COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+  lint-and-validate:
+    name: Lint and Validate Helm Chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-# Copy the application source code
-# THIS IS THE LINE WE FIXED. It now correctly looks for the file in the current context.
-COPY app.py .
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.8.1
 
-# Expose the port the app runs on
-EXPOSE 8080
+      - name: Lint Helm chart
+        run: helm lint ./helm/model-server
 
-# Command to run the application
-CMD ["python", "app.py"]
+  deploy-to-staging:
+    name: Deploy to Staging Environment
+    runs-on: ubuntu-latest
+    needs: [build-and-push, lint-and-validate]
+    steps:
+      - name: Simulate Deployment to Staging
+        run: |
+          echo "Simulating deployment to Staging Kubernetes Cluster..."
+          echo "COMMAND THAT WOULD RUN:"
+          echo "helm upgrade --install model-server-staging ./helm/model-server --set image.tag=${{ github.sha }} --namespace staging"
+          echo "Deployment to staging simulated successfully."
+
+  deploy-to-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-to-staging
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Simulate Deployment to Production
+        run: |
+          echo "Simulating deployment to Production Kubernetes Cluster..."
+          echo "COMMAND THAT WOULD RUN:"
+          echo "helm upgrade --install model-server-prod ./helm/model-server --set image.tag=${{ github.sha }} --namespace production"
+          echo "Deployment to production simulated successfully."
