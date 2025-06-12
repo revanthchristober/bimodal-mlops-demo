@@ -24,9 +24,9 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          # THIS IS THE LINE WE ARE FIXING.
-          # The context should be the root of the repo.
+          # THIS IS THE FIX: Use the entire repo as context.
           context: .
+          # And specify the full path to the Dockerfile.
           file: ./src/app/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/model-server:latest, ${{ secrets.DOCKERHUB_USERNAME }}/model-server:${{ github.sha }}
